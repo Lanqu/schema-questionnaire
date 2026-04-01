@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YSQ-S3R Scoring Tests</title>
+<style>
+body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+h1 { color: #fff; }
+.suite { margin: 20px 0; }
+.suite-name { font-size: 16px; font-weight: bold; color: #8ab4f8; margin: 10px 0 5px; }
+.pass { color: #4caf50; }
+.fail { color: #f44336; }
+.test { margin: 2px 0 2px 20px; font-size: 14px; }
+#summary { font-size: 18px; margin-top: 20px; padding: 10px; border-radius: 4px; }
+#summary.all-pass { background: #1b5e20; color: #a5d6a7; }
+#summary.has-fail { background: #b71c1c; color: #ef9a9a; }
+</style>
+</head>
+<body>
+<h1>YSQ-S3R Scoring Tests</h1>
+<div id="output"></div>
+<div id="summary"></div>
+
+<!-- Scoring module will be loaded here -->
+<script src="ysq_scoring.js"></script>
+
+<script>
+let passed = 0, failed = 0;
+const out = document.getElementById("output");
+
+function suite(name) {
+  const div = document.createElement("div");
+  div.className = "suite";
+  div.innerHTML = `<div class="suite-name">${name}</div>`;
+  out.appendChild(div);
+  return div;
+}
+
+function assert(suiteEl, description, condition) {
+  const div = document.createElement("div");
+  div.className = "test";
+  if (condition) {
+    div.innerHTML = `<span class="pass">PASS</span> ${description}`;
+    passed++;
+  } else {
+    div.innerHTML = `<span class="fail">FAIL</span> ${description}`;
+    failed++;
+  }
+  suiteEl.appendChild(div);
+}
+
+function assertClose(suiteEl, description, actual, expected, tolerance) {
+  tolerance = tolerance || 0.01;
+  assert(suiteEl, `${description} (got ${actual}, expected ${expected})`,
+    Math.abs(actual - expected) < tolerance);
+}
+
+// ========== TEST SUITES ==========
+
+// --- scoreSchema ---
+(function testScoreSchema() {
+  const s = suite("scoreSchema(answers, questionNumbers)");
+
+  // Basic calculation: [4, 1, 1, 3, 4] → sum=13, mean=2.6, pct=32%, level=пониженный
+  const r1 = scoreSchema({1:4, 19:1, 37:1, 55:3, 73:4}, [1, 19, 37, 55, 73]);
+  assert(s, "total = 13", r1.total === 13);
+  assertClose(s, "mean = 2.6", r1.mean, 2.6);
+  assertClose(s, "pct = 32", r1.pct, 32);
+  assert(s, "level = пониженный", r1.level === "пониженный");
+  assert(s, "highCount = 0", r1.highCount === 0);
+
+  // With high scores: [4, 3, 3, 5, 5] → sum=20, mean=4.0, pct=60%, level=умеренный
+  const r2 = scoreSchema({3:4, 21:3, 39:3, 57:5, 75:5}, [3, 21, 39, 57, 75]);
+  assert(s, "total = 20", r2.total === 20);
+  assertClose(s, "mean = 4.0", r2.mean, 4.0);
+  assertClose(s, "pct = 60", r2.pct, 60);
+  assert(s, "level = умеренный (60% is boundary)", r2.level === "умеренный");
+  assert(s, "highCount = 2", r2.highCount === 2);
+
+  // Self-sacrifice: [3, 4, 3, 4, 6] → sum=20, mean=4.0, highCount=1
+  const r3 = scoreSchema({11:3, 29:4, 47:3, 65:4, 83:6}, [11, 29, 47, 65, 83]);
+  assert(s, "total = 20 (self-sacrifice)", r3.total === 20);
+  assert(s, "highCount = 1 (only 6)", r3.highCount === 1);
+})();
+
+// --- Level thresholds ---
+(function testLevelThresholds() {
+  const s = suite("Level threshold boundaries");
+
+  // All 1s → sum=5, pct=0% → низкий
+  const r1 = scoreSchema({1:1, 2:1, 3:1, 4:1, 5:1}, [1, 2, 3, 4, 5]);
+  assertClose(s, "all 1s: pct = 0", r1.pct, 0);
+  assert(s, "all 1s: level = низкий", r1.level === "низкий");
+
+  // All 6s → sum=30, pct=100% → высокий
+  const r2 = scoreSchema({1:6, 2:6, 3:6, 4:6, 5:6}, [1, 2, 3, 4, 5]);
+  assertClose(s, "all 6s: pct = 100", r2.pct, 100);
+  assert(s, "all 6s: level = высокий", r2.level === "высокий");
+
+  // Exactly 20% boundary: sum=10, pct=20% → низкий (<=20)
+  const r3 = scoreSchema({1:2, 2:2, 3:2, 4:2, 5:2}, [1, 2, 3, 4, 5]);
+  assertClose(s, "all 2s: pct = 20", r3.pct, 20);
+  assert(s, "pct=20: level = низкий", r3.level === "низкий");
+
+  // Just above 20%: sum=11, pct=24% → пониженный
+  const r4 = scoreSchema({1:3, 2:2, 3:2, 4:2, 5:2}, [1, 2, 3, 4, 5]);
+  assertClose(s, "sum=11: pct = 24", r4.pct, 24);
+  assert(s, "pct=24: level = пониженный", r4.level === "пониженный");
+
+  // Exactly 40%: sum=15, pct=40% → пониженный
+  const r5 = scoreSchema({1:3, 2:3, 3:3, 4:3, 5:3}, [1, 2, 3, 4, 5]);
+  assertClose(s, "all 3s: pct = 40", r5.pct, 40);
+  assert(s, "pct=40: level = пониженный", r5.level === "пониженный");
+
+  // Just above 40%: need sum=16, pct=44% → умеренный
+  const r6 = scoreSchema({1:4, 2:3, 3:3, 4:3, 5:3}, [1, 2, 3, 4, 5]);
+  assertClose(s, "sum=16: pct = 44", r6.pct, 44);
+  assert(s, "pct=44: level = умеренный", r6.level === "умеренный");
+
+  // Exactly 60%: sum=20, pct=60% → умеренный
+  const r7 = scoreSchema({1:4, 2:4, 3:4, 4:4, 5:4}, [1, 2, 3, 4, 5]);
+  assertClose(s, "all 4s: pct = 60", r7.pct, 60);
+  assert(s, "pct=60: level = умеренный", r7.level === "умеренный");
+
+  // Exactly 80%: sum=25, pct=80% → повышенный
+  const r8 = scoreSchema({1:5, 2:5, 3:5, 4:5, 5:5}, [1, 2, 3, 4, 5]);
+  assertClose(s, "all 5s: pct = 80", r8.pct, 80);
+  assert(s, "pct=80: level = повышенный", r8.level === "повышенный");
+
+  // Above 80%: sum=26, pct=84% → высокий
+  const r9 = scoreSchema({1:6, 2:5, 3:5, 4:5, 5:5}, [1, 2, 3, 4, 5]);
+  assertClose(s, "sum=26: pct = 84", r9.pct, 84);
+  assert(s, "pct=84: level = высокий", r9.level === "высокий");
+})();
+
+// --- Schema mappings ---
+(function testSchemaMappings() {
+  const s = suite("YSQ_SCHEMAS mapping (18 schemas, 5 questions each)");
+
+  assert(s, "YSQ_SCHEMAS has 18 entries", YSQ_SCHEMAS.length === 18);
+
+  // Verify every question 1-90 is assigned exactly once
+  const allQuestions = [];
+  YSQ_SCHEMAS.forEach(schema => {
+    assert(s, `${schema.code} has 5 questions`, schema.questions.length === 5);
+    allQuestions.push(...schema.questions);
+  });
+  const uniqueQ = new Set(allQuestions);
+  assert(s, "90 unique questions total", uniqueQ.size === 90);
+  assert(s, "all questions in range 1-90",
+    allQuestions.every(q => q >= 1 && q <= 90));
+
+  // Spot-check specific schemas
+  const ed = YSQ_SCHEMAS.find(s => s.code === "ЭД");
+  assert(s, "ЭД questions = [1,19,37,55,73]",
+    JSON.stringify(ed.questions) === JSON.stringify([1,19,37,55,73]));
+
+  const pk = YSQ_SCHEMAS.find(s => s.code === "ПК");
+  assert(s, "ПК questions = [18,36,54,72,90]",
+    JSON.stringify(pk.questions) === JSON.stringify([18,36,54,72,90]));
+
+  const zhs = YSQ_SCHEMAS.find(s => s.code === "ЖС");
+  assert(s, "ЖС questions = [13,31,49,67,85]",
+    JSON.stringify(zhs.questions) === JSON.stringify([13,31,49,67,85]));
+})();
+
+// --- scoreAllSchemas ---
+(function testScoreAllSchemas() {
+  const s = suite("scoreAllSchemas(answers)");
+
+  // Use the real answers from results.json
+  const answers = {
+    1:4,2:4,3:4,4:4,5:2,6:1,7:2,8:4,9:2,10:2,
+    11:3,12:2,13:4,14:2,15:3,16:2,17:4,18:2,19:1,20:4,
+    21:3,22:3,23:1,24:2,25:3,26:4,27:3,28:5,29:4,30:4,
+    31:4,32:2,33:1,34:4,35:3,36:3,37:1,38:3,39:3,40:4,
+    41:1,42:2,43:2,44:4,45:4,46:2,47:3,48:3,49:5,50:4,
+    51:4,52:2,53:4,54:4,55:3,56:4,57:5,58:2,59:2,60:2,
+    61:2,62:4,63:3,64:1,65:4,66:3,67:4,68:2,69:4,70:3,
+    71:5,72:4,73:4,74:4,75:5,76:3,77:3,78:2,79:3,80:3,
+    81:3,82:4,83:6,84:4,85:4,86:3,87:4,88:3,89:3,90:1,
+  };
+
+  const results = scoreAllSchemas(answers);
+  assert(s, "returns 18 schema results", Object.keys(results).length === 18);
+
+  // Verify against Python output
+  assertClose(s, "ЭД mean = 2.6", results["ЭД"].mean, 2.6);
+  assert(s, "ЭД level = пониженный", results["ЭД"].level === "пониженный");
+
+  assertClose(s, "ЖС mean = 4.2", results["ЖС"].mean, 4.2);
+  assert(s, "ЖС level = повышенный", results["ЖС"].level === "повышенный");
+
+  assertClose(s, "НН mean = 4.0", results["НН"].mean, 4.0);
+  assert(s, "НН level = умеренный", results["НН"].level === "умеренный");
+
+  assertClose(s, "С mean = 4.0", results["С"].mean, 4.0);
+  assert(s, "С highCount = 1", results["С"].highCount === 1);
+
+  assertClose(s, "ДС mean = 1.8", results["ДС"].mean, 1.8);
+  assert(s, "ДС level = низкий", results["ДС"].level === "низкий");
+
+  assertClose(s, "НО mean = 1.8", results["НО"].mean, 1.8);
+  assert(s, "НО level = низкий", results["НО"].level === "низкий");
+
+  assertClose(s, "ПП mean = 2.8", results["ПП"].mean, 2.8);
+  assert(s, "ПП level = пониженный", results["ПП"].level === "пониженный");
+})();
+
+// --- scoreDomains ---
+(function testScoreDomains() {
+  const s = suite("scoreDomains(schemaResults)");
+
+  const answers = {
+    1:4,2:4,3:4,4:4,5:2,6:1,7:2,8:4,9:2,10:2,
+    11:3,12:2,13:4,14:2,15:3,16:2,17:4,18:2,19:1,20:4,
+    21:3,22:3,23:1,24:2,25:3,26:4,27:3,28:5,29:4,30:4,
+    31:4,32:2,33:1,34:4,35:3,36:3,37:1,38:3,39:3,40:4,
+    41:1,42:2,43:2,44:4,45:4,46:2,47:3,48:3,49:5,50:4,
+    51:4,52:2,53:4,54:4,55:3,56:4,57:5,58:2,59:2,60:2,
+    61:2,62:4,63:3,64:1,65:4,66:3,67:4,68:2,69:4,70:3,
+    71:5,72:4,73:4,74:4,75:5,76:3,77:3,78:2,79:3,80:3,
+    81:3,82:4,83:6,84:4,85:4,86:3,87:4,88:3,89:3,90:1,
+  };
+
+  const schemaResults = scoreAllSchemas(answers);
+  const domains = scoreDomains(schemaResults);
+
+  assert(s, "returns 5 domains", Object.keys(domains).length === 5);
+
+  // РСО = avg of ЭД(2.6), ПН(3.8), НН(4.0), СИО(3.2), ДС(1.8) = 15.4/5 = 3.08
+  assertClose(s, "РСО mean = 3.08", domains["РСО"].mean, 3.08);
+
+  // НЛАНД = avg of НО(1.8), ЗН(2.4), У(3.8), СДНЯ(3.0) = 11.0/4 = 2.75
+  assertClose(s, "НЛАНД mean = 2.75", domains["НЛАНД"].mean, 2.75);
+
+  // НГ = avg of ПГ(2.6), НС(3.2) = 5.8/2 = 2.9
+  assertClose(s, "НГ mean = 2.9", domains["НГ"].mean, 2.9);
+
+  // НД = avg of ПП(2.8), С(4.0), ПО(2.8) = 9.6/3 = 3.2
+  assertClose(s, "НД mean = 3.2", domains["НД"].mean, 3.2);
+
+  // СбП = avg of ПЭ(3.2), ЖС(4.2), НП(3.8), ПК(2.8) = 14.0/4 = 3.5
+  assertClose(s, "СбП mean = 3.5", domains["СбП"].mean, 3.5);
+
+  // Domain high counts
+  assert(s, "РСО highCount = 2", domains["РСО"].highCount === 2);
+  assert(s, "НЛАНД highCount = 0", domains["НЛАНД"].highCount === 0);
+})();
+
+// --- YSQ_DOMAINS structure ---
+(function testDomainsStructure() {
+  const s = suite("YSQ_DOMAINS structure");
+
+  assert(s, "has 5 domains", Object.keys(YSQ_DOMAINS).length === 5);
+
+  assert(s, "РСО has 5 schemas",
+    JSON.stringify(YSQ_DOMAINS["РСО"].schemas) ===
+    JSON.stringify(["ЭД", "ПН", "НН", "СИО", "ДС"]));
+
+  assert(s, "НЛАНД has 4 schemas",
+    JSON.stringify(YSQ_DOMAINS["НЛАНД"].schemas) ===
+    JSON.stringify(["НО", "ЗН", "У", "СДНЯ"]));
+
+  assert(s, "НГ has 2 schemas",
+    JSON.stringify(YSQ_DOMAINS["НГ"].schemas) ===
+    JSON.stringify(["ПГ", "НС"]));
+
+  assert(s, "НД has 3 schemas",
+    JSON.stringify(YSQ_DOMAINS["НД"].schemas) ===
+    JSON.stringify(["ПП", "С", "ПО"]));
+
+  assert(s, "СбП has 4 schemas",
+    JSON.stringify(YSQ_DOMAINS["СбП"].schemas) ===
+    JSON.stringify(["ПЭ", "ЖС", "НП", "ПК"]));
+})();
+
+// ========== SUMMARY ==========
+const summaryEl = document.getElementById("summary");
+summaryEl.className = failed === 0 ? "all-pass" : "has-fail";
+summaryEl.textContent = `${passed} passed, ${failed} failed (${passed + failed} total)`;
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+_temp_*
+.ruff_cache/
+.claude/
+__pycache__/
