@@ -53,27 +53,50 @@ page = f"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schema Questionnaires</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<title>Схемные опросники</title>
 <style>
+:root {{
+  --bg: #faf7f2;
+  --bg-card: #fffdf9;
+  --bg-hover: #f5f0e8;
+  --accent: #c4704b;
+  --accent-dark: #a85a3a;
+  --accent-light: #f0ddd4;
+  --text: #2d2a26;
+  --text-muted: #7a7168;
+  --text-light: #a69e94;
+  --border: #e8e2d9;
+  --success: #6b8f5e;
+  --warning: #d4943a;
+  --danger: #c45a4a;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --shadow-sm: 0 1px 3px rgba(45,42,38,0.06);
+  --shadow-md: 0 2px 8px rgba(45,42,38,0.08);
+}}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; line-height: 1.5; }}
-.container {{ max-width: 800px; margin: 0 auto; padding: 20px; }}
-h1 {{ text-align: center; margin: 20px 0; color: #1a1a2e; }}
-h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; padding-bottom: 8px; }}
-.instructions {{ background: #e8f0fe; border-left: 4px solid #0f3460; padding: 15px; margin: 15px 0 25px; border-radius: 0 8px 8px 0; font-size: 14px; }}
-.scale-legend {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 20px; }}
-.scale-legend span {{ background: #fff; padding: 4px 10px; border-radius: 4px; font-size: 13px; border: 1px solid #ddd; }}
-.q {{ background: #fff; padding: 14px 18px; margin: 6px 0; border-radius: 8px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: background 0.2s; flex-wrap: wrap; }}
-.q:hover {{ background: #f8f9ff; }}
-.q.answered {{ border-left: 3px solid #4caf50; }}
-.q-num {{ font-weight: 700; color: #0f3460; min-width: 30px; font-size: 15px; }}
-.q-text {{ flex: 1; font-size: 15px; cursor: pointer; }}
-.q-text:hover {{ color: #0f3460; }}
-.q-hint {{ display: none; width: 100%; font-size: 12px; color: #888; font-style: italic; padding: 2px 0 0 30px; }}
+body {{ font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.6; }}
+.container {{ max-width: 800px; margin: 0 auto; padding: 24px 20px; animation: fadeIn 0.4s ease; }}
+@keyframes fadeIn {{ from {{ opacity: 0; transform: translateY(8px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+h1 {{ font-family: var(--font-display); text-align: center; margin: 24px 0; color: var(--text); font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }}
+h2 {{ font-family: var(--font-display); margin: 32px 0 12px; color: var(--text); border-bottom: 2px solid var(--accent); padding-bottom: 8px; font-size: 22px; font-weight: 600; }}
+.instructions {{ background: var(--accent-light); border-left: 4px solid var(--accent); padding: 16px 20px; margin: 16px 0 28px; border-radius: 0 8px 8px 0; font-size: 14px; color: var(--text); line-height: 1.7; }}
+.scale-legend {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 24px; }}
+.scale-legend span {{ background: var(--bg-card); padding: 5px 12px; border-radius: 6px; font-size: 13px; border: 1px solid var(--border); color: var(--text-muted); }}
+.q {{ background: var(--bg-card); padding: 16px 20px; margin: 5px 0; border-radius: 8px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); transition: all 0.2s ease; flex-wrap: wrap; border: 1px solid transparent; }}
+.q:hover {{ background: var(--bg-hover); border-color: var(--border); }}
+.q.answered {{ border-left: 3px solid var(--accent); }}
+.q-num {{ font-family: var(--font-display); font-weight: 700; color: var(--accent); min-width: 32px; font-size: 16px; }}
+.q-text {{ flex: 1; font-size: 15px; cursor: pointer; transition: color 0.15s; }}
+.q-text:hover {{ color: var(--accent); }}
+.q-hint {{ display: none; width: 100%; font-size: 13px; color: var(--text-light); font-style: italic; padding: 4px 0 0 32px; }}
 .q-hint.open {{ display: block; }}
-.q-opts {{ display: flex; gap: 4px; flex-shrink: 0; }}
-.q-opts label {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 2px solid #ddd; border-radius: 50%; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.15s; user-select: none; }}
-.q-opts label:hover {{ border-color: #0f3460; background: #e8f0fe; }}
+.q-opts {{ display: flex; gap: 5px; flex-shrink: 0; }}
+.q-opts label {{ display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border: 2px solid var(--border); border-radius: 50%; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.15s ease; user-select: none; color: var(--text-muted); }}
+.q-opts label:hover {{ border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }}
 .q-opts input {{
   position: absolute;
   width: 1px;
@@ -85,82 +108,83 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
   border: 0;
 }}
 .q-opts label:focus-within {{
-  outline: 2px solid #0f3460;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }}
-.q-opts label:has(input:checked) {{ border-color: #0f3460; background: #0f3460; color: #fff; }}
-.progress {{ position: sticky; top: 0; z-index: 100; background: #fff; padding: 8px 12px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }}
-.progress-bar {{ flex: 1; min-width: 60px; height: 8px; background: #e0e0e0; border-radius: 4px; }}
-.progress-fill {{ height: 100%; background: linear-gradient(90deg, #0f3460, #4caf50); border-radius: 4px; transition: width 0.3s; }}
-.btn {{ display: block; margin: 30px auto; padding: 12px 24px; background: #0f3460; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; max-width: 100%; }}
-.btn:hover {{ background: #16213e; }}
-#results {{ display: none; background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0; white-space: pre-wrap; font-family: monospace; font-size: 13px; }}
+.q-opts label:has(input:checked) {{ border-color: var(--accent); background: var(--accent); color: #fff; }}
+.progress {{ position: sticky; top: 0; z-index: 100; background: var(--bg-card); padding: 10px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; backdrop-filter: blur(8px); }}
+.progress-bar {{ flex: 1; min-width: 60px; height: 6px; background: var(--border); border-radius: 3px; }}
+.progress-fill {{ height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); border-radius: 3px; transition: width 0.3s ease; }}
+.btn {{ display: block; margin: 32px auto; padding: 14px 28px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; max-width: 100%; transition: background 0.2s; }}
+.btn:hover {{ background: var(--accent-dark); }}
+#results {{ display: none; background: var(--bg-card); padding: 20px; border-radius: 8px; margin: 20px 0; white-space: pre-wrap; font-family: monospace; font-size: 13px; }}
 #ysq-results {{ display: none; margin: 20px 0; }}
 #smi-results {{ display: none; margin: 20px 0; }}
-.level-very-high {{ background: #ffcdd2; color: #b71c1c; }}
-.cat-header {{ font-size: 13px; font-weight: 700; color: #0f3460; padding: 12px 0 4px; border-bottom: 2px solid #0f3460; margin-top: 10px; }}
-.reverse-tag {{ font-size: 10px; color: #888; margin-left: 4px; }}
+.level-very-high {{ background: #f8d7da; color: #9b2c2c; }}
+.cat-header {{ font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--accent-dark); padding: 14px 0 6px; border-bottom: 2px solid var(--accent); margin-top: 12px; }}
+.reverse-tag {{ font-size: 10px; color: var(--text-light); margin-left: 4px; font-style: italic; }}
 @media (max-width: 600px) {{
-  .q {{ flex-wrap: wrap; padding: 10px 12px; gap: 6px; }}
+  .q {{ flex-wrap: wrap; padding: 12px 14px; gap: 8px; }}
   .q-text {{ min-width: 100%; font-size: 14px; }}
-  .q-opts label {{ width: 32px; height: 32px; font-size: 13px; }}
+  .q-opts label {{ width: 34px; height: 34px; font-size: 13px; }}
   .schema-row {{ flex-wrap: wrap; gap: 4px; }}
   .schema-name {{ min-width: calc(100% - 55px); font-size: 12px; }}
   .schema-bar-wrap {{ flex: 1; }}
-  .progress {{ padding: 6px 8px; gap: 6px; }}
-  .container {{ padding: 10px; }}
-  h1 {{ font-size: 20px; }}
-  .scale-legend {{ font-size: 11px; }}
-  .scale-legend span {{ padding: 3px 6px; }}
+  .progress {{ padding: 8px 10px; gap: 6px; }}
+  .container {{ padding: 12px; }}
+  h1 {{ font-size: 22px; }}
+  h2 {{ font-size: 18px; }}
+  .scale-legend span {{ padding: 3px 8px; font-size: 11px; }}
   .domain-card {{ flex-wrap: wrap; gap: 4px; }}
 }}
-.results-section {{ background: #fff; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }}
-.results-section h3 {{ margin: 0 0 15px; color: #16213e; font-size: 16px; }}
-.schema-row {{ display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }}
+.results-section {{ background: var(--bg-card); border-radius: 8px; padding: 24px; margin: 16px 0; box-shadow: var(--shadow-md); border: 1px solid var(--border); }}
+.results-section h3 {{ font-family: var(--font-display); margin: 0 0 16px; color: var(--text); font-size: 17px; font-weight: 600; }}
+.schema-row {{ display: flex; align-items: center; gap: 10px; padding: 10px 6px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; border-radius: 4px; }}
 .schema-row:last-child {{ border-bottom: none; }}
-.schema-row:hover {{ background: #f8f9ff; }}
-.schema-code {{ font-weight: 700; min-width: 45px; color: #0f3460; font-size: 13px; }}
-.schema-name {{ flex: 1; font-size: 13px; }}
-.schema-bar-wrap {{ width: 120px; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }}
-.schema-bar {{ height: 100%; border-radius: 5px; transition: width 0.5s; }}
-.schema-mean {{ min-width: 35px; text-align: right; font-weight: 600; font-size: 13px; }}
-.schema-level {{ min-width: 100px; font-size: 12px; padding: 2px 8px; border-radius: 10px; text-align: center; }}
-.level-low {{ background: #e8f5e9; color: #2e7d32; }}
-.level-reduced {{ background: #f1f8e9; color: #558b2f; }}
-.level-medium {{ background: #fff8e1; color: #f57f17; }}
-.level-elevated {{ background: #fff3e0; color: #e65100; }}
-.level-high {{ background: #fbe9e7; color: #bf360c; }}
-.domain-card {{ background: #f8f9ff; border-left: 4px solid #0f3460; padding: 12px 16px; margin: 8px 0; border-radius: 0 8px 8px 0; display: flex; justify-content: space-between; align-items: center; }}
-.domain-name {{ font-weight: 600; font-size: 14px; }}
-.domain-mean {{ font-size: 20px; font-weight: 700; color: #0f3460; }}
-.tab-bar {{ display: flex; gap: 0; margin: 20px 0 0; }}
-.tab {{ padding: 12px 24px; background: #ddd; border: none; cursor: pointer; font-size: 15px; font-weight: 600; border-radius: 8px 8px 0 0; }}
-.tab.active {{ background: #0f3460; color: #fff; }}
+.schema-row:hover {{ background: var(--bg-hover); }}
+.schema-code {{ font-family: var(--font-display); font-weight: 700; min-width: 45px; color: var(--accent); font-size: 14px; }}
+.schema-name {{ flex: 1; font-size: 13px; color: var(--text); }}
+.schema-bar-wrap {{ width: 120px; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }}
+.schema-bar {{ height: 100%; border-radius: 4px; transition: width 0.5s ease; }}
+.schema-mean {{ min-width: 35px; text-align: right; font-weight: 600; font-size: 13px; color: var(--text); }}
+.schema-level {{ min-width: 100px; font-size: 12px; padding: 3px 10px; border-radius: 12px; text-align: center; font-weight: 600; }}
+.level-low {{ background: #e8f0e4; color: #4a6b3e; }}
+.level-reduced {{ background: #edf2e4; color: #5a7a42; }}
+.level-medium {{ background: #faf0dd; color: #8a6a2a; }}
+.level-elevated {{ background: var(--accent-light); color: var(--accent-dark); }}
+.level-high {{ background: #f5ddd8; color: #8b3a2e; }}
+.domain-card {{ background: var(--bg-card); border-left: 4px solid var(--accent); padding: 14px 20px; margin: 8px 0; border-radius: 0 8px 8px 0; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm); }}
+.domain-name {{ font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--text); }}
+.domain-mean {{ font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--accent); }}
+.tab-bar {{ display: flex; gap: 0; margin: 24px 0 0; }}
+.tab {{ font-family: var(--font-body); padding: 12px 24px; background: var(--border); border: none; cursor: pointer; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; color: var(--text-muted); transition: all 0.2s; }}
+.tab:hover {{ background: var(--accent-light); color: var(--accent-dark); }}
+.tab.active {{ background: var(--accent); color: #fff; }}
 .tab-content {{ display: none; }}
 .tab-content.active {{ display: block; }}
-.unanswered-warning {{ color: #d32f2f; font-weight: 600; margin: 10px 0; display: none; }}
-.schema-detail {{ display: none; padding: 8px 16px 12px 60px; font-size: 13px; color: #555; border-bottom: 1px solid #f0f0f0; }}
+.unanswered-warning {{ color: var(--danger); font-weight: 600; margin: 10px 0; display: none; }}
+.schema-detail {{ display: none; padding: 10px 20px 14px 60px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border); line-height: 1.7; }}
 .schema-detail.open {{ display: block; }}
-.disclaimer {{ background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px 16px; margin: 15px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #e65100; }}
-.summary-box {{ background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; margin: 10px 0; border-radius: 0 8px 8px 0; font-size: 14px; }}
-.item-breakdown {{ margin: 8px 0 0; padding: 0; list-style: none; font-size: 12px; }}
-.item-breakdown li {{ padding: 4px 6px; color: #777; cursor: pointer; border-radius: 4px; transition: background 0.15s; }}
-.item-breakdown li:hover {{ background: #e8f0fe; color: #0f3460; }}
-.item-breakdown .high-item {{ color: #d32f2f; font-weight: 600; }}
-.item-breakdown .high-item:hover {{ background: #fce4ec; color: #b71c1c; }}
+.disclaimer {{ background: #fdf6ed; border-left: 4px solid var(--warning); padding: 14px 20px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #7a5a2a; line-height: 1.6; }}
+.summary-box {{ background: #f0f4ec; border-left: 4px solid var(--success); padding: 14px 20px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 14px; color: #3d5a30; line-height: 1.6; }}
+.item-breakdown {{ margin: 10px 0 0; padding: 0; list-style: none; font-size: 13px; }}
+.item-breakdown li {{ padding: 5px 8px; color: var(--text-muted); cursor: pointer; border-radius: 4px; transition: all 0.15s; }}
+.item-breakdown li:hover {{ background: var(--accent-light); color: var(--accent-dark); }}
+.item-breakdown .high-item {{ color: var(--danger); font-weight: 600; }}
+.item-breakdown .high-item:hover {{ background: #f5ddd8; color: #8b3a2e; }}
 </style>
 </head>
 <body>
 
 <div class="progress" id="progressBar">
-  <button id="shareBtn" onclick="shareUrl()" style="padding:4px 10px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">Поделиться</button>
-  <button onclick="resetAll()" style="padding:4px 10px;background:#d32f2f;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">Сбросить</button>
+  <button id="shareBtn" onclick="shareUrl()" style="padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:var(--font-body);font-size:11px;font-weight:600;white-space:nowrap;transition:background 0.2s">Поделиться</button>
+  <button onclick="resetAll()" style="padding:5px 12px;background:var(--danger);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:var(--font-body);font-size:11px;font-weight:600;white-space:nowrap;transition:background 0.2s">Сбросить</button>
   <span id="progressText">0 / {total}</span>
   <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   <span id="progressPct">0%</span>
 </div>
 
-<button id="back-to-results" onclick="backToResults()" style="display:none;position:fixed;bottom:20px;right:20px;z-index:200;padding:10px 18px;background:#0f3460;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3)">&larr; К результатам</button>
+<button id="back-to-results" onclick="backToResults()" style="display:none;position:fixed;bottom:20px;right:20px;z-index:200;padding:12px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(196,112,75,0.3);transition:background 0.2s">&larr; К результатам</button>
 
 <div class="container">
 <h1>Schema Questionnaires</h1>
@@ -265,12 +289,12 @@ const LEVEL_CSS = {{
 }};
 
 const LEVEL_COLORS = {{
-  "низкий": "#4caf50",
-  "пониженный": "#8bc34a",
-  "умеренный": "#ffc107",
-  "повышенный": "#ff9800",
-  "высокий": "#f44336",
-  "оч. высокий": "#b71c1c",
+  "низкий": "#6b8f5e",
+  "пониженный": "#7a9a5e",
+  "умеренный": "#d4943a",
+  "повышенный": "#c4704b",
+  "высокий": "#c45a4a",
+  "оч. высокий": "#9b2c2c",
 }};
 
 function toggleEl(id) {{
@@ -366,7 +390,7 @@ function showYsqResults() {{
     domainFragments.push(
       '<div class="domain-card">' +
       '<div><span class="domain-name">' + d.name + '</span> (' + code + ')' +
-      (d.highCount > 0 ? ' <span style="color:#e65100;font-size:12px">Высокие (5-6): ' + d.highCount + '</span>' : '') +
+      (d.highCount > 0 ? ' <span style="color:#a85a3a;font-size:12px">Высокие (5-6): ' + d.highCount + '</span>' : '') +
       (domDesc ? '<div style="font-size:12px;color:#555;margin-top:4px">' + domDesc + '</div>' : '') +
       '</div>' +
       '<div class="domain-mean">' + d.mean.toFixed(2) + '</div>' +
@@ -535,7 +559,7 @@ function showSmiResults() {{
     var color = LEVEL_COLORS[r.level];
     var levelCss = LEVEL_CSS[r.level];
     var revTag = r.reverse ? '<span class="reverse-tag">(обр.)</span>' : '';
-    var highTag = r.highCount > 0 ? ' <span style="color:#e65100;font-size:11px">(' + r.highCount + ' выс.)</span>' : '';
+    var highTag = r.highCount > 0 ? ' <span style="color:#a85a3a;font-size:11px">(' + r.highCount + ' выс.)</span>' : '';
     var detailId = 'smi-cat-detail-' + code;
 
     var modeInterp = INTERPRETATIONS.smi.modes[code];
