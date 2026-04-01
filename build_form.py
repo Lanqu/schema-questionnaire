@@ -150,7 +150,7 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
 <body>
 
 <div class="progress" id="progressBar">
-  <button id="shareBtn" onclick="shareUrl()" style="padding:4px 10px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">Share URL</button>
+  <button id="shareBtn" onclick="shareUrl()" style="padding:4px 10px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">Поделиться</button>
   <button onclick="resetAll()" style="padding:4px 10px;background:#d32f2f;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">Сбросить</button>
   <span id="progressText">0 / {total}</span>
   <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
@@ -705,8 +705,8 @@ function shareUrl() {{
   history.replaceState(null, '', '#' + encoded);
   navigator.clipboard.writeText(url);
   var btn = document.getElementById('shareBtn');
-  btn.textContent = 'Copied!';
-  setTimeout(function() {{ btn.textContent = 'Share URL'; }}, 2000);
+  btn.textContent = 'Скопировано!';
+  setTimeout(function() {{ btn.textContent = 'Поделиться'; }}, 2000);
 }}
 
 function loadFromHash() {{
