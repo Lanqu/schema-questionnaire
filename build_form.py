@@ -177,11 +177,11 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
   <div id="ysq-disclaimer"></div>
   <div id="ysq-summary"></div>
   <div class="results-section">
-    <h3>Domains</h3>
+    <h3>Домены</h3>
     <div id="ysq-domains"></div>
   </div>
   <div class="results-section">
-    <h3>Schemas (sorted by score)</h3>
+    <h3>Схемы (по убыванию)</h3>
     <div id="ysq-schemas"></div>
   </div>
 </div>
@@ -208,11 +208,11 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
   <div id="smi-disclaimer"></div>
   <div id="smi-summary"></div>
   <div class="results-section">
-    <h3>By clinical significance</h3>
+    <h3>По клинической значимости</h3>
     <div id="smi-clinical"></div>
   </div>
   <div class="results-section">
-    <h3>By category</h3>
+    <h3>По категориям</h3>
     <div id="smi-categories"></div>
   </div>
 </div>
@@ -315,7 +315,7 @@ function showYsqResults() {{
     domainFragments.push(
       '<div class="domain-card">' +
       '<div><span class="domain-name">' + d.name + '</span> (' + code + ')' +
-      (d.highCount > 0 ? ' <span style="color:#e65100;font-size:12px">High(5-6): ' + d.highCount + '</span>' : '') +
+      (d.highCount > 0 ? ' <span style="color:#e65100;font-size:12px">Высокие (5-6): ' + d.highCount + '</span>' : '') +
       (domDesc ? '<div style="font-size:12px;color:#555;margin-top:4px">' + domDesc + '</div>' : '') +
       '</div>' +
       '<div class="domain-mean">' + d.mean.toFixed(2) + '</div>' +
@@ -427,7 +427,7 @@ function showSmiResults() {{
     var barWidth = (clinicalScore(r.mean, r.reverse) / 6 * 100).toFixed(0);
     var color = LEVEL_COLORS[r.level];
     var levelCss = LEVEL_CSS[r.level];
-    var revTag = r.reverse ? '<span class="reverse-tag">(reverse)</span>' : '';
+    var revTag = r.reverse ? '<span class="reverse-tag">(обр.)</span>' : '';
     var detailId = 'smi-clin-detail-' + r.code;
 
     var modeInterp = INTERPRETATIONS.smi.modes[r.code];
@@ -483,8 +483,8 @@ function showSmiResults() {{
     var barWidth = (clinicalScore(r.mean, r.reverse) / 6 * 100).toFixed(0);
     var color = LEVEL_COLORS[r.level];
     var levelCss = LEVEL_CSS[r.level];
-    var revTag = r.reverse ? '<span class="reverse-tag">(reverse)</span>' : '';
-    var highTag = r.highCount > 0 ? ' <span style="color:#e65100;font-size:11px">(' + r.highCount + ' high)</span>' : '';
+    var revTag = r.reverse ? '<span class="reverse-tag">(обр.)</span>' : '';
+    var highTag = r.highCount > 0 ? ' <span style="color:#e65100;font-size:11px">(' + r.highCount + ' выс.)</span>' : '';
     var detailId = 'smi-cat-detail-' + code;
 
     var modeInterp = INTERPRETATIONS.smi.modes[code];
