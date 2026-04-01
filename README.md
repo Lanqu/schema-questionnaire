@@ -26,21 +26,24 @@ Combined **YSQ-S3R** (Young Schema Questionnaire - Short Form, 3rd Revision) and
 ## How to build and deploy
 
 ```bash
-python build_form.py        # generates dist/index.html
+python src/build_form.py    # generates dist/index.html
 cd dist && npx surge .      # deploys to schema-questionnaire.surge.sh
 ```
 
 ## Project structure
 
 ```
-questions.json           # 214 question texts + per-item hints
-interpretations.json     # clinical descriptions, level meanings, disclaimer
-build_form.py            # generates dist/index.html from the above
-ysq_scoring.js           # YSQ scoring: 18 schemas, 5 domains
-smi_scoring.js           # SMI scoring: 14 modes, reverse scoring, shared items
-dist/                    # deployment folder (generated, do not hand-edit)
-test_ysq_scoring.html    # YSQ scoring tests (open in browser)
-test_smi_scoring.html    # SMI scoring tests (open in browser)
+src/
+  build_form.py              # generates dist/index.html
+  scoring/                   # JS scoring modules (source of truth)
+    ysq_scoring.js
+    smi_scoring.js
+  data/                      # question texts, hints, clinical descriptions
+    questions.json
+    interpretations.json
+tests/                       # browser-based scoring tests
+dist/                        # generated deployment output
+reference/                   # Python reference scripts, Excel source files
 ```
 
 ## Scoring methodology

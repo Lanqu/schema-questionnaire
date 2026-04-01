@@ -1,11 +1,14 @@
 import json
 import html as html_mod
 import shutil
+from pathlib import Path
 
-with open("F:/personal/psyco/questions.json", "r", encoding="utf-8") as f:
+ROOT = Path(__file__).resolve().parent.parent
+
+with open(ROOT / "src" / "data" / "questions.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
-with open("F:/personal/psyco/interpretations.json", "r", encoding="utf-8") as f:
+with open(ROOT / "src" / "data" / "interpretations.json", "r", encoding="utf-8") as f:
     interpretations = json.load(f)
 
 ysq = data["ysq"]
@@ -731,15 +734,14 @@ if (!loadFromHash()) {{ autoLoad(); }}
 </body>
 </html>"""
 
-with open("F:/personal/psyco/dist/index.html", "w", encoding="utf-8") as f:
+dist = ROOT / "dist"
+dist.mkdir(exist_ok=True)
+
+with open(dist / "index.html", "w", encoding="utf-8") as f:
     f.write(page)
 
 # Copy scoring modules
-shutil.copy2(
-    "F:/personal/psyco/ysq_scoring.js", "F:/personal/psyco/dist/ysq_scoring.js"
-)
-shutil.copy2(
-    "F:/personal/psyco/smi_scoring.js", "F:/personal/psyco/dist/smi_scoring.js"
-)
+shutil.copy2(ROOT / "src" / "scoring" / "ysq_scoring.js", dist / "ysq_scoring.js")
+shutil.copy2(ROOT / "src" / "scoring" / "smi_scoring.js", dist / "smi_scoring.js")
 
 print(f"Done: dist/index.html ({total} questions)")

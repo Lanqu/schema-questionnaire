@@ -1,6 +1,7 @@
 const fs = require('fs');
 const vm = require('vm');
-const script = fs.readFileSync('F:/personal/psyco/smi_scoring.js', 'utf8');
+const path = require('path');
+const script = fs.readFileSync(path.join(__dirname, '..', 'src', 'scoring', 'smi_scoring.js'), 'utf8');
 vm.runInThisContext(script);
 
 // Verify item counts match Excel
@@ -13,7 +14,7 @@ for (const mode of Object.keys(expected)) {
 }
 
 // Calculate scores with real data
-const data = JSON.parse(fs.readFileSync('F:/personal/psyco/results.json', 'utf8'));
+const data = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'reference', 'results.json'), 'utf8'));
 const answers = {};
 for (const k in data.smi) answers[parseInt(k)] = data.smi[k];
 const results = scoreAllModes(answers);
