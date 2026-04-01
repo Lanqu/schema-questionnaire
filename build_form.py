@@ -151,6 +151,7 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
 
 <div class="progress" id="progressBar">
   <button id="shareBtn" onclick="shareUrl()" style="padding:4px 10px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">Share URL</button>
+  <button onclick="resetAll()" style="padding:4px 10px;background:#d32f2f;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">Сбросить</button>
   <span id="progressText">0 / {total}</span>
   <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   <span id="progressPct">0%</span>
@@ -606,6 +607,26 @@ document.addEventListener('keydown', function(e) {{
     }}
   }}
 }});
+
+function resetAll() {{
+  if (!confirm('Сбросить все ответы? Это действие нельзя отменить.')) return;
+  document.querySelectorAll('input[type=radio]:checked').forEach(function(el) {{
+    el.checked = false;
+  }});
+  document.querySelectorAll('.q').forEach(function(el) {{
+    el.classList.remove('answered');
+    el.style.border = '';
+    el.style.boxShadow = '';
+  }});
+  document.querySelectorAll('.q-hint').forEach(function(el) {{
+    el.classList.remove('open');
+  }});
+  document.getElementById('ysq-results').style.display = 'none';
+  document.getElementById('smi-results').style.display = 'none';
+  localStorage.removeItem('schema_answers');
+  history.replaceState(null, '', location.pathname);
+  updateProgress();
+}}
 
 // Auto-save to localStorage
 function autoSave() {{
