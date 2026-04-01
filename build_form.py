@@ -265,6 +265,16 @@ function toggleHint(id) {{
   if (el) el.classList.toggle('open');
 }}
 
+function goToQuestion(prefix, num) {{
+  switchTab(prefix, {{target: document.getElementById('tab-btn-' + prefix)}});
+  var el = document.getElementById(prefix + '-q' + num);
+  if (el) {{
+    el.scrollIntoView({{behavior: 'smooth', block: 'center'}});
+    el.style.boxShadow = '0 0 0 3px #0f3460';
+    setTimeout(function() {{ el.style.boxShadow = ''; }}, 2000);
+  }}
+}}
+
 function showYsqResults() {{
   var answers = {{}};
   var missing = [];
@@ -361,7 +371,7 @@ function showYsqResults() {{
       schemaObj.questions.forEach(function(qnum) {{
         var val = answers[qnum];
         var cssClass = val >= 5 ? 'high-item' : '';
-        highItems.push('<li class="' + cssClass + '">#' + qnum + ': ' + YSQ_QUESTIONS[qnum] + ' = ' + val + '</li>');
+        highItems.push('<li class="' + cssClass + '" style="cursor:pointer" onclick="goToQuestion(\\'ysq\\', ' + qnum + ')">#' + qnum + ': ' + YSQ_QUESTIONS[qnum] + ' = ' + val + '</li>');
       }});
     }}
 
@@ -455,7 +465,7 @@ function showSmiResults() {{
         var val = r.scores[qIdx];
         var isHigh = r.reverse ? (val <= 2) : (val >= 5);
         var cssClass = isHigh ? 'high-item' : '';
-        itemBreakdown.push('<li class="' + cssClass + '">#' + qnum + ': ' + SMI_QUESTIONS[qnum] + ' = ' + val + '</li>');
+        itemBreakdown.push('<li class="' + cssClass + '" style="cursor:pointer" onclick="goToQuestion(\\'smi\\', ' + qnum + ')">#' + qnum + ': ' + SMI_QUESTIONS[qnum] + ' = ' + val + '</li>');
       }});
     }}
 
@@ -511,7 +521,7 @@ function showSmiResults() {{
         var val = r.scores[qIdx];
         var isHigh = r.reverse ? (val <= 2) : (val >= 5);
         var cssClass = isHigh ? 'high-item' : '';
-        itemBreakdown.push('<li class="' + cssClass + '">#' + qnum + ': ' + SMI_QUESTIONS[qnum] + ' = ' + val + '</li>');
+        itemBreakdown.push('<li class="' + cssClass + '" style="cursor:pointer" onclick="goToQuestion(\\'smi\\', ' + qnum + ')">#' + qnum + ': ' + SMI_QUESTIONS[qnum] + ' = ' + val + '</li>');
       }});
     }}
 
