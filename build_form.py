@@ -156,6 +156,8 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
   <span id="progressPct">0%</span>
 </div>
 
+<button id="back-to-results" onclick="backToResults()" style="display:none;position:fixed;bottom:20px;right:20px;z-index:200;padding:10px 18px;background:#0f3460;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3)">&larr; К результатам</button>
+
 <div class="container">
 <h1>Schema Questionnaires</h1>
 
@@ -265,14 +267,29 @@ function toggleHint(id) {{
   if (el) el.classList.toggle('open');
 }}
 
+var _savedScrollPos = null;
+var _savedTab = null;
+
 function goToQuestion(prefix, num) {{
+  _savedScrollPos = window.scrollY;
+  _savedTab = document.querySelector('.tab.active');
   switchTab(prefix, {{target: document.getElementById('tab-btn-' + prefix)}});
   var el = document.getElementById(prefix + '-q' + num);
   if (el) {{
     el.scrollIntoView({{behavior: 'smooth', block: 'center'}});
     el.style.boxShadow = '0 0 0 3px #0f3460';
-    setTimeout(function() {{ el.style.boxShadow = ''; }}, 2000);
+    setTimeout(function() {{ el.style.boxShadow = ''; }}, 3000);
   }}
+  document.getElementById('back-to-results').style.display = 'block';
+}}
+
+function backToResults() {{
+  if (_savedTab) {{
+    var tabId = _savedTab.id.replace('tab-btn-', '');
+    switchTab(tabId, {{target: _savedTab}});
+  }}
+  window.scrollTo({{top: _savedScrollPos || 0, behavior: 'smooth'}});
+  document.getElementById('back-to-results').style.display = 'none';
 }}
 
 function showYsqResults() {{
