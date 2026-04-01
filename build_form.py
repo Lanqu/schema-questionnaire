@@ -17,16 +17,21 @@ def render_questions(questions, prefix):
     for q in questions:
         num = q["num"]
         text = html_mod.escape(q["text"])
+        hint = html_mod.escape(q.get("hint", ""))
         opts = ""
         for v in range(1, 7):
             opts += (
                 f'<label><input type="radio" name="{prefix}_{num}" value="{v}" '
                 f'onchange="markAnswered(this)"><span>{v}</span></label>'
             )
+        hint_html = (
+            f'<div class="q-hint" id="{prefix}-hint-{num}">{hint}</div>' if hint else ""
+        )
         parts.append(
             f'<div class="q" id="{prefix}-q{num}">'
             f'<span class="q-num">{num}.</span>'
-            f'<span class="q-text">{text}</span>'
+            f'<span class="q-text" onclick="toggleHint(\'{prefix}-hint-{num}\')">{text}</span>'
+            f"{hint_html}"
             f'<span class="q-opts">{opts}</span>'
             f"</div>"
         )
@@ -57,11 +62,14 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
 .instructions {{ background: #e8f0fe; border-left: 4px solid #0f3460; padding: 15px; margin: 15px 0 25px; border-radius: 0 8px 8px 0; font-size: 14px; }}
 .scale-legend {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 20px; }}
 .scale-legend span {{ background: #fff; padding: 4px 10px; border-radius: 4px; font-size: 13px; border: 1px solid #ddd; }}
-.q {{ background: #fff; padding: 14px 18px; margin: 6px 0; border-radius: 8px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: background 0.2s; }}
+.q {{ background: #fff; padding: 14px 18px; margin: 6px 0; border-radius: 8px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: background 0.2s; flex-wrap: wrap; }}
 .q:hover {{ background: #f8f9ff; }}
 .q.answered {{ border-left: 3px solid #4caf50; }}
 .q-num {{ font-weight: 700; color: #0f3460; min-width: 30px; font-size: 15px; }}
-.q-text {{ flex: 1; font-size: 15px; }}
+.q-text {{ flex: 1; font-size: 15px; cursor: pointer; }}
+.q-text:hover {{ color: #0f3460; }}
+.q-hint {{ display: none; width: 100%; font-size: 12px; color: #888; font-style: italic; padding: 2px 0 0 30px; }}
+.q-hint.open {{ display: block; }}
 .q-opts {{ display: flex; gap: 4px; flex-shrink: 0; }}
 .q-opts label {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 2px solid #ddd; border-radius: 50%; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.15s; user-select: none; }}
 .q-opts label:hover {{ border-color: #0f3460; background: #e8f0fe; }}
@@ -248,6 +256,11 @@ const LEVEL_COLORS = {{
 }};
 
 function toggleDetail(id) {{
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}}
+
+function toggleHint(id) {{
   var el = document.getElementById(id);
   if (el) el.classList.toggle('open');
 }}
