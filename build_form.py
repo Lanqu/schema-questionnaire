@@ -143,8 +143,10 @@ h2 {{ margin: 30px 0 10px; color: #16213e; border-bottom: 2px solid #0f3460; pad
 .disclaimer {{ background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px 16px; margin: 15px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #e65100; }}
 .summary-box {{ background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; margin: 10px 0; border-radius: 0 8px 8px 0; font-size: 14px; }}
 .item-breakdown {{ margin: 8px 0 0; padding: 0; list-style: none; font-size: 12px; }}
-.item-breakdown li {{ padding: 2px 0; color: #777; }}
+.item-breakdown li {{ padding: 4px 6px; color: #777; cursor: pointer; border-radius: 4px; transition: background 0.15s; }}
+.item-breakdown li:hover {{ background: #e8f0fe; color: #0f3460; }}
 .item-breakdown .high-item {{ color: #d32f2f; font-weight: 600; }}
+.item-breakdown .high-item:hover {{ background: #fce4ec; color: #b71c1c; }}
 </style>
 </head>
 <body>
