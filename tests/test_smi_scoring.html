@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SMI v1.1 Scoring Tests</title>
+<style>
+body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+h1 { color: #fff; }
+.suite { margin: 20px 0; }
+.suite-name { font-size: 16px; font-weight: bold; color: #8ab4f8; margin: 10px 0 5px; }
+.pass { color: #4caf50; }
+.fail { color: #f44336; }
+.test { margin: 2px 0 2px 20px; font-size: 14px; }
+#summary { font-size: 18px; margin-top: 20px; padding: 10px; border-radius: 4px; }
+#summary.all-pass { background: #1b5e20; color: #a5d6a7; }
+#summary.has-fail { background: #b71c1c; color: #ef9a9a; }
+</style>
+</head>
+<body>
+<h1>SMI v1.1 Scoring Tests</h1>
+<div id="output"></div>
+<div id="summary"></div>
+
+<script src="../src/scoring/ysq_scoring.js"></script>
+<script src="../src/scoring/smi_scoring.js"></script>
+
+<script>
+let passed = 0, failed = 0;
+const out = document.getElementById("output");
+
+function suite(name) {
+  const div = document.createElement("div");
+  div.className = "suite";
+  div.innerHTML = `<div class="suite-name">${name}</div>`;
+  out.appendChild(div);
+  return div;
+}
+
+function assert(suiteEl, description, condition) {
+  const div = document.createElement("div");
+  div.className = "test";
+  if (condition) {
+    div.innerHTML = `<span class="pass">PASS</span> ${description}`;
+    passed++;
+  } else {
+    div.innerHTML = `<span class="fail">FAIL</span> ${description}`;
+    failed++;
+  }
+  suiteEl.appendChild(div);
+}
+
+function assertClose(suiteEl, description, actual, expected, tolerance) {
+  tolerance = tolerance || 0.01;
+  assert(suiteEl, `${description} (got ${actual.toFixed(3)}, expected ${expected})`,
+    Math.abs(actual - expected) < tolerance);
+}
+
+// ========== TEST SUITES ==========
+
+// --- SMI_MODES item lists (items can be shared across modes) ---
+(function testModeItemLists() {
+  const s = suite("SMI_MODES item lists (from Excel formulas)");
+
+  // Spot checks: specific items in specific modes
+  assert(s, "item 1 in BA", SMI_MODES["BA"].items.includes(1));
+  assert(s, "item 2 in CC", SMI_MODES["CC"].items.includes(2));
+  assert(s, "item 20 in HA", SMI_MODES["HA"].items.includes(20));
+  assert(s, "item 124 in HA", SMI_MODES["HA"].items.includes(124));
+
+  // Shared items: 15 items belong to 2 modes each
+  assert(s, "item 5 in CS and PP", SMI_MODES["CS"].items.includes(5) && SMI_MODES["PP"].items.includes(5));
+  assert(s, "item 10 in UC and SA", SMI_MODES["UC"].items.includes(10) && SMI_MODES["SA"].items.includes(10));
+  assert(s, "item 67 in VC and UC", SMI_MODES["VC"].items.includes(67) && SMI_MODES["UC"].items.includes(67));
+  assert(s, "item 83 in DS and DPa", SMI_MODES["DS"].items.includes(83) && SMI_MODES["DPa"].items.includes(83));
+  assert(s, "item 104 in UC and DPa", SMI_MODES["UC"].items.includes(104) && SMI_MODES["DPa"].items.includes(104));
+})();
+
+// --- SMI_MODES grouping ---
+(function testModesGrouping() {
+  const s = suite("SMI_MODES (14 modes)");
+
+  assert(s, "has 14 modes", Object.keys(SMI_MODES).length === 14);
+
+  // Verify all 124 items are assigned
+  let totalItems = 0;
+  for (const mode of Object.values(SMI_MODES)) {
+    totalItems += mode.items.length;
+  }
+  assert(s, "124 total items across all modes", totalItems === 124);
+
+  // Check specific mode item counts (from Excel)
+  assert(s, "VC has 10 items", SMI_MODES["VC"].items.length === 10);
+  assert(s, "DPa has 10 items", SMI_MODES["DPa"].items.length === 10);
+  assert(s, "HA has 10 items", SMI_MODES["HA"].items.length === 10);
+  assert(s, "BA has 9 items", SMI_MODES["BA"].items.length === 9);
+  assert(s, "UC has 6 items", SMI_MODES["UC"].items.length === 6);
+  assert(s, "CS has 7 items", SMI_MODES["CS"].items.length === 7);
+  assert(s, "DS has 4 items", SMI_MODES["DS"].items.length === 4);
+  assert(s, "IC has 9 items", SMI_MODES["IC"].items.length === 9);
+  assert(s, "DP has 9 items", SMI_MODES["DP"].items.length === 9);
+
+  // Check reverse-scored modes
+  assert(s, "CC is reverse-scored", SMI_MODES["CC"].reverse === true);
+  assert(s, "HA is reverse-scored", SMI_MODES["HA"].reverse === true);
+  assert(s, "VC is NOT reverse-scored", SMI_MODES["VC"].reverse === false);
+  assert(s, "DPa is NOT reverse-scored", SMI_MODES["DPa"].reverse === false);
+
+  // Check categories
+  assert(s, "VC category = Детские режимы", SMI_MODES["VC"].cat === "Детские режимы");
+  assert(s, "CS category = Избегающие режимы", SMI_MODES["CS"].cat === "Избегающие режимы");
+  assert(s, "SA category = Режимы гиперкомпенсации", SMI_MODES["SA"].cat === "Режимы гиперкомпенсации");
+  assert(s, "PP category = Родительские режимы", SMI_MODES["PP"].cat === "Родительские режимы");
+  assert(s, "HA category = Режимы здорового взрослого", SMI_MODES["HA"].cat === "Режимы здорового взрослого");
+})();
+
+// --- scoreMode ---
+(function testScoreMode() {
+  const s = suite("scoreMode(answers, items)");
+
+  // Simple case: all 3s for BA (9 items) → mean = 3.0
+  const items = SMI_MODES["BA"].items;  // [1, 24, 32, 53, 77, 93, 99, 102, 112]
+  const answers = {};
+  items.forEach(i => answers[i] = 3);
+  const r = scoreMode(answers, items);
+  assertClose(s, "mean = 3.0 for all 3s", r.mean, 3.0);
+  assert(s, "highCount = 0 for all 3s", r.highCount === 0);
+
+  // Mixed with highs
+  const answers2 = {};
+  items.forEach((item, idx) => answers2[item] = idx < 3 ? 5 : 2);
+  const r2 = scoreMode(answers2, items);
+  assert(s, "highCount = 3 for three 5s", r2.highCount === 3);
+})();
+
+// --- getSmiLevel (normal scale) ---
+(function testGetSmiLevelNormal() {
+  const s = suite("getSmiLevel — normal scales");
+
+  // VC norms: [1.0, 1.47, 1.98, 3.36, 4.47]
+  const vcNorms = [1.0, 1.47, 1.98, 3.36, 4.47];
+
+  assert(s, "VC 1.0 = низкий", getSmiLevel(1.0, vcNorms, false) === "низкий");
+  assert(s, "VC 1.2 = пониженный", getSmiLevel(1.2, vcNorms, false) === "пониженный");
+  assert(s, "VC 1.47 = пониженный", getSmiLevel(1.47, vcNorms, false) === "пониженный");
+  assert(s, "VC 1.5 = умеренный", getSmiLevel(1.5, vcNorms, false) === "умеренный");
+  assert(s, "VC 1.98 = умеренный", getSmiLevel(1.98, vcNorms, false) === "умеренный");
+  assert(s, "VC 2.0 = повышенный", getSmiLevel(2.0, vcNorms, false) === "повышенный");
+  assert(s, "VC 3.36 = повышенный", getSmiLevel(3.36, vcNorms, false) === "повышенный");
+  assert(s, "VC 4.0 = высокий", getSmiLevel(4.0, vcNorms, false) === "высокий");
+  assert(s, "VC 4.47 = высокий", getSmiLevel(4.47, vcNorms, false) === "высокий");
+  assert(s, "VC 5.0 = оч. высокий", getSmiLevel(5.0, vcNorms, false) === "оч. высокий");
+})();
+
+// --- getSmiLevel (reverse scale) ---
+(function testGetSmiLevelReverse() {
+  const s = suite("getSmiLevel — reverse scales (CC, HA)");
+
+  // CC norms: [6.0, 5.06, 4.52, 2.88, 2.11]
+  const ccNorms = [6.0, 5.06, 4.52, 2.88, 2.11];
+
+  assert(s, "CC 6.0 = низкий", getSmiLevel(6.0, ccNorms, true) === "низкий");
+  assert(s, "CC 5.5 = пониженный", getSmiLevel(5.5, ccNorms, true) === "пониженный");
+  assert(s, "CC 5.06 = пониженный", getSmiLevel(5.06, ccNorms, true) === "пониженный");
+  assert(s, "CC 4.8 = умеренный", getSmiLevel(4.8, ccNorms, true) === "умеренный");
+  assert(s, "CC 4.52 = умеренный", getSmiLevel(4.52, ccNorms, true) === "умеренный");
+  assert(s, "CC 3.0 = повышенный", getSmiLevel(3.0, ccNorms, true) === "повышенный");
+  assert(s, "CC 2.5 = высокий", getSmiLevel(2.5, ccNorms, true) === "высокий");
+  assert(s, "CC 2.0 = оч. высокий", getSmiLevel(2.0, ccNorms, true) === "оч. высокий");
+})();
+
+// --- clinicalScore for sorting ---
+(function testClinicalScore() {
+  const s = suite("clinicalScore — sorting by clinical significance");
+
+  // Normal mode: clinical score = mean
+  assert(s, "normal mode: clinical = mean", clinicalScore(3.5, false) === 3.5);
+
+  // Reverse mode: clinical = 7 - mean (low CC/HA = high concern)
+  assert(s, "reverse mode: clinical(4.22) = 2.78", Math.abs(clinicalScore(4.22, true) - 2.78) < 0.01);
+  assert(s, "reverse mode: clinical(3.10) = 3.90", Math.abs(clinicalScore(3.10, true) - 3.90) < 0.01);
+
+  // DPa(4.92, normal) should rank above CC(3.10, reverse=3.90)
+  assert(s, "DPa(4.92) ranks above CC(3.90 clinical)",
+    clinicalScore(4.92, false) > clinicalScore(3.10, true));
+})();
+
+// --- SMI_MODE_ORDER ---
+(function testModeOrder() {
+  const s = suite("SMI_MODE_ORDER (display order)");
+
+  assert(s, "has 14 entries", SMI_MODE_ORDER.length === 14);
+  assert(s, "starts with VC", SMI_MODE_ORDER[0] === "VC");
+  assert(s, "ends with HA", SMI_MODE_ORDER[13] === "HA");
+})();
+
+// ========== SUMMARY ==========
+const summaryEl = document.getElementById("summary");
+summaryEl.className = failed === 0 ? "all-pass" : "has-fail";
+summaryEl.textContent = `${passed} passed, ${failed} failed (${passed + failed} total)`;
+</script>
+</body>
+</html>

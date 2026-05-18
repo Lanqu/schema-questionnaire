@@ -1,0 +1,16 @@
+_temp_*
+.ruff_cache/
+.claude/
+__pycache__/
+
+# Local-only Node test runners; HTML tests are the canonical runner
+tests/run_*.js
+
+# Defense in depth: never let PII from the source materials sneak back in
+reference/
+results.json
+*Ilya*
+*Илья*
+*Наташа*
+*.xls
+*.xlsx
